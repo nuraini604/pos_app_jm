@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/bottom_navigation.dart';
 
 class HistoryPage extends StatelessWidget {
   const HistoryPage({super.key});
@@ -40,16 +39,6 @@ class HistoryPage extends StatelessWidget {
               },
             ),
           );
-        },
-      ),
-      bottomNavigationBar: BottomNavigation(
-        currentIndex: 2,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/');
-          } else if (index == 1) {
-            Navigator.pushReplacementNamed(context, '/order');
-          }
         },
       ),
     );

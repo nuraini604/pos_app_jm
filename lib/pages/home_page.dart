@@ -12,7 +12,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedCategoryIndex = 0;
-  int _currentIndex = 0; // Menambahkan variabel untuk index Bottom Navigation
 
   final List<Map<String, dynamic>> _categories = [
     {'icon': Icons.local_cafe, 'text': 'Coffee'},
@@ -249,7 +248,8 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final filteredProducts = _allProducts.where((product) =>
     product['category'] == _categories[_selectedCategoryIndex]['text']).toList();
-    final bestSellers = _allProducts.where((product) => product['stock'] <= 30).toList();
+    final bestSellers =
+    _allProducts.where((product) => product['stock'] <= 30).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -275,7 +275,8 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: TextField(
                 decoration: InputDecoration(
                   filled: true,
@@ -346,7 +347,8 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
                     child: Text(
                       _categories[_selectedCategoryIndex]['text'],
                       style: const TextStyle(
@@ -375,28 +377,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Order',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'History',
-          ),
-        ],
       ),
     );
   }
@@ -438,7 +418,7 @@ class _HomePageState extends State<HomePage> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       decoration: BoxDecoration(
-        color: Colors.white, // Sesuaikan warna dengan box recommended
+        color: Colors.white,
         borderRadius: BorderRadius.circular(6),
         boxShadow: [
           BoxShadow(

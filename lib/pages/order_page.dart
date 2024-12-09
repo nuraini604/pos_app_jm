@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../widgets/bottom_navigation.dart';
 
 class OrderPage extends StatelessWidget {
   const OrderPage({super.key});
@@ -34,16 +33,6 @@ class OrderPage extends StatelessWidget {
             color: Colors.grey[700],
           ),
         ),
-      ),
-      bottomNavigationBar: BottomNavigation(
-        currentIndex: 1, // Tab Order aktif
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/');
-          } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/history');
-          }
-        },
       ),
     );
   }
