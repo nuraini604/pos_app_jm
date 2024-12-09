@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:posproject/LocalDb.dart';
+import 'package:posproject/models/produk_model.dart';
 import 'package:posproject/pages/CartPage.dart';
 
 class DetailPage extends StatefulWidget {
+  final Product product; // Menggunakan tipe Product, bukan dynamic
+
+  DetailPage({required this.product});
+
   @override
   _DetailPageState createState() => _DetailPageState();
 }
@@ -11,13 +16,13 @@ class _DetailPageState extends State<DetailPage> {
   final LocalDatabase _localDatabase = LocalDatabase();
   late Future<List<Map<String, dynamic>>> _orderDetails;
 
-  // Variabel untuk pilihan opsi
+  // Variabel untuk opsi
   String? _selectedSize;
   String? _selectedSweetness;
   String? _selectedIceCube;
   List<String> _selectedToppings = [];
 
-  // Variabel quantity
+  // Variabel untuk kuantitas
   int _quantity = 1;
 
   @override
@@ -26,15 +31,15 @@ class _DetailPageState extends State<DetailPage> {
     _orderDetails = _localDatabase.fetchOrderDetails();
   }
 
-  // Fungsi untuk memeriksa apakah semua opsi wajib sudah dipilih
+  // Memeriksa apakah opsi yang wajib sudah dipilih
   bool _areMandatoryOptionsSelected() {
-    return _selectedSize != null &&
-        _selectedSweetness != null &&
-        _selectedIceCube != null;
+    return _selectedSize != null && _selectedSweetness != null && _selectedIceCube != null;
   }
 
   @override
   Widget build(BuildContext context) {
+    final product = widget.product; // Produk yang dipilih
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -59,7 +64,7 @@ class _DetailPageState extends State<DetailPage> {
           ),
         ],
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
+      body: FutureBuilder<List<Map<String, dynamic>>>(  // Menampilkan pilihan kategori
         future: _orderDetails,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -76,141 +81,148 @@ class _DetailPageState extends State<DetailPage> {
 
           final orderDetails = snapshot.data!;
 
-          // Urutan penempatan kategori
+          // Urutkan kategori berdasarkan prioritas
           final priorityOrder = ['Size', 'Sweetness', 'Ice Cube', 'Topping'];
 
-          // Tampilannya sesuai priority ordernya
           orderDetails.sort((a, b) {
             final aIndex = priorityOrder.indexOf(a['category']);
             final bIndex = priorityOrder.indexOf(b['category']);
             return aIndex.compareTo(bIndex);
           });
 
-          // Dikelompokkan untuk menghindari perulangan banyak
           final groupedCategories = groupCategories(orderDetails);
 
-          return Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: groupedCategories.length,
-                  itemBuilder: (context, index) {
-                    final category = groupedCategories[index];
-                    final categoryName = category['category'];
-                    final choices = category['choices'];
-
-                    // Semua kategori diubah menjadi "Required"
-                    String label = "Required";
-
-                    // Ubah label menjadi "Optional" untuk kategori Topping
-                    if (categoryName == "Topping") {
-                      label = "Optional";
-                    }
-
-                    return _buildCategory(categoryName, choices, label);
-                  },
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
+          return SingleChildScrollView(  // Wrap seluruh body dengan SingleChildScrollView
+            child: Column(
+              children: [
+                // Membuat gambar dan nama produk dapat digulir
+                ClipRRect(
                   borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
+                    bottomLeft: Radius.circular(40),
+                    bottomRight: Radius.circular(40),
+                  ),
+                  child: Image.asset(
+                    '${product.imagePath}', 
+                    width: 500,
+                    height: 200,
+                    fit: BoxFit.cover,
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // Menampilkan nama produk
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    product.name, 
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                ),
+                // Menampilkan pilihan kategori berdasarkan data dari database
+                Column(
                   children: [
-                    // Quantity section
-                    StatefulBuilder(
-                      builder: (context, setStateQuantity) {
-                        return Row(
-                          children: [
-                            // Tombol -
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                shape: BoxShape.circle,
-                              ),
-                              child: IconButton(
-                                icon: Icon(Icons.remove, color: Colors.white),
-                                onPressed: () {
-                                  setStateQuantity(() {
-                                    if (_quantity > 1) {
-                                      _quantity--;
-                                    }
-                                  });
-                                },
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            Text(
-                              '$_quantity',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Poppins',
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            // Tombol +
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                shape: BoxShape.circle,
-                              ),
-                              child: IconButton(
-                                icon: Icon(Icons.add, color: Colors.white),
-                                onPressed: () {
-                                  setStateQuantity(() {
-                                    _quantity++;
-                                  });
-                                },
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                    // Tombol harga
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _areMandatoryOptionsSelected()
-                            ? Colors.blue
-                            : Colors.grey,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      onPressed: _areMandatoryOptionsSelected()
-                          ? () {
-                              // Fungsi total akan ditambahkan nanti
-                            }
-                          : null,
-                      child: Text(
-                        'Rp 24.000',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
-                    ),
+                    // Membuat kategori dapat digulir
+                    for (var category in groupedCategories)
+                      _buildCategory(category['category'], category['choices']),
                   ],
                 ),
-              ),
-            ],
+                // Bagian bawah untuk kuantitas dan harga
+                Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Bagian kuantitas
+                      StatefulBuilder(
+                        builder: (context, setStateQuantity) {
+                          return Row(
+                            children: [
+                              // Tombol minus
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: IconButton(
+                                  icon: Icon(Icons.remove, color: Colors.white),
+                                  onPressed: () {
+                                    setStateQuantity(() {
+                                      if (_quantity > 1) {
+                                        _quantity--;
+                                      }
+                                    });
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              Text(
+                                '$_quantity',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              // Tombol tambah
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: IconButton(
+                                  icon: Icon(Icons.add, color: Colors.white),
+                                  onPressed: () {
+                                    setStateQuantity(() {
+                                      _quantity++;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      // Tombol harga
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _areMandatoryOptionsSelected() ? Colors.blue : Colors.grey,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        onPressed: _areMandatoryOptionsSelected() ? () {} : null,
+                        child: Text(
+                          'Rp ${product.price}', 
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),
     );
   }
 
-  // Fungsi untuk mengelompokkan kategori
-  List<Map<String, dynamic>> groupCategories(
-      List<Map<String, dynamic>> orderDetails) {
+  // Fungsi untuk mengelompokkan kategori produk
+  List<Map<String, dynamic>> groupCategories(List<Map<String, dynamic>> orderDetails) {
     Set<String> processedCategories = Set();
     List<Map<String, dynamic>> groupedCategories = [];
 
@@ -225,23 +237,21 @@ class _DetailPageState extends State<DetailPage> {
     return groupedCategories;
   }
 
-  // Fungsi untuk membangun kategori dengan radio dan checkbox
-  Widget _buildCategory(String categoryName, List choices, String label) {
-    bool isRadioCategory = categoryName == "Size" ||
-        categoryName == "Sweetness" ||
-        categoryName == "Ice Cube";
+  // Fungsi untuk membangun kategori dengan radio button atau checkbox
+  Widget _buildCategory(String categoryName, List choices) {
+    bool isRadioCategory = categoryName == "Size" || categoryName == "Sweetness" || categoryName == "Ice Cube";
 
     if (isRadioCategory) {
-      return _buildRadioCategory(categoryName, choices, label);
+      return _buildRadioCategory(categoryName, choices);
     } else if (categoryName == "Topping") {
-      return _buildCheckboxCategory(categoryName, choices, label);
+      return _buildCheckboxCategory(categoryName, choices);
     }
 
     return Container();
   }
 
-  // Fungsi untuk membangun kategori size, sweetness, icecube
-  Widget _buildRadioCategory(String categoryName, List choices, String label) {
+  // Fungsi untuk kategori radio button (Size, Sweetness, Ice Cube)
+  Widget _buildRadioCategory(String categoryName, List choices) {
     String? selectedValue;
 
     if (categoryName == "Size") {
@@ -266,11 +276,6 @@ class _DetailPageState extends State<DetailPage> {
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Poppins'),
-              ),
-              Text(
-                label,
-                style: TextStyle(
-                    fontSize: 11, color: Colors.black38, fontFamily: 'Poppins'),
               ),
             ],
           ),
@@ -308,9 +313,8 @@ class _DetailPageState extends State<DetailPage> {
     );
   }
 
-  // Fungsi untuk kategori topping dengan checkbox
-  Widget _buildCheckboxCategory(
-      String categoryName, List choices, String label) {
+  // Fungsi untuk kategori checkbox (Topping)
+  Widget _buildCheckboxCategory(String categoryName, List choices) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
@@ -325,11 +329,6 @@ class _DetailPageState extends State<DetailPage> {
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Poppins'),
-              ),
-              Text(
-                label,
-                style: TextStyle(
-                    fontSize: 11, color: Colors.black38, fontFamily: 'Poppins'),
               ),
             ],
           ),
@@ -346,8 +345,7 @@ class _DetailPageState extends State<DetailPage> {
                             fontFamily: 'Poppins'))
                     : null,
                 value: _selectedToppings.contains(choice['name']),
-                controlAffinity: ListTileControlAffinity.trailing,
-                onChanged: (bool? value) {
+                onChanged: (value) {
                   setState(() {
                     if (value == true) {
                       _selectedToppings.add(choice['name']);

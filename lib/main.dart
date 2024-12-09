@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:posproject/LocalDb.dart';
 import 'package:posproject/pages/home_page.dart';
-import 'package:posproject/pages/Detail_Page.dart';
 import 'package:posproject/pages/history_page.dart';
 
 void main() async {
@@ -21,7 +20,6 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const MainPage(),
-        '/order': (context) => DetailPage(),
         '/history': (context) => const HistoryPage(),
       },
     );
@@ -40,7 +38,6 @@ class _MainPageState extends State<MainPage> {
 
   final List<Widget> _pages = [
     const HomePage(),
-    DetailPage(),
     const HistoryPage(),
   ];
 
@@ -61,10 +58,6 @@ class _MainPageState extends State<MainPage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Order',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.history),
