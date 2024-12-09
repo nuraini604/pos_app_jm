@@ -42,7 +42,7 @@ dependencies:
   equatable: ^2.0.3
   intl: ^0.18.1
   google_fonts: ^5.0.0
-  carousel_slider: ^4.0.0
+  carousel_slider: ^5.0.0
 
 dev_dependencies:
   flutter_test:

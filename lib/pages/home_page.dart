@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:posproject/LocalDb.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:carousel_slider/carousel_controller.dart' as customCarousel;
+import 'package:flutter/src/material/carousel.dart' as flutterCarousel;
+import 'package:posproject/pages/Detail_Page.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -270,9 +273,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () => LocalDatabase.fetchProducts(),
-        child: Column(
+      body:Column(
           children: [
             Padding(
               padding:
@@ -377,7 +378,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-      ),
     );
   }
 
@@ -470,10 +470,16 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            IconButton(
-              icon: const Icon(Icons.add_shopping_cart),
-              onPressed: () {},
-            ),
+             IconButton(
+          icon: const Icon(Icons.add_shopping_cart),
+          onPressed: () {
+            // Navigasi ke DetailPage
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => DetailPage()),
+            );
+          },
+        ),
           ],
         ),
       ),

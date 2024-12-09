@@ -5,13 +5,9 @@ import 'package:path/path.dart';
 class LocalDatabase {
   Database? _database;
 
-  static const String tableProducts = 'products';
-  static const String tableOrders = 'orders';
-  static const String tableOrderDetails = 'order_details';
-
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initializeDB('Local.db');
+    _database = await _initializeDB('Detail.db');
     return _database!;
   }
 
@@ -19,6 +15,7 @@ class LocalDatabase {
     try {
       final dbPath = await getDatabasesPath();
       final path = join(dbPath, filepath);
+
       return await openDatabase(
         path,
         version: 1,
@@ -32,360 +29,188 @@ class LocalDatabase {
 
   Future<void> _createDB(Database db, int version) async {
     try {
+      // Create table for categories
       await db.execute('''
-        CREATE TABLE $tableProducts (
+        CREATE TABLE IF NOT EXISTS option_categories (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          product_name TEXT NOT NULL,
-          category TEXT NOT NULL,
-          price INTEGER NOT NULL,
-          description TEXT,
-          image_path TEXT,
-          available INTEGER NOT NULL DEFAULT 1
+          name TEXT NOT NULL
         )
       ''');
 
+      // Create table for choices
       await db.execute('''
-        CREATE TABLE $tableOrders (
+        CREATE TABLE IF NOT EXISTS option_choices (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          order_date TEXT NOT NULL,
-          total_price INTEGER NOT NULL,
-          customer_name TEXT,
-          customer_phone TEXT,
-          status TEXT
+          category_id INTEGER NOT NULL,
+          name TEXT NOT NULL,
+          additional_price INTEGER DEFAULT 0,
+          FOREIGN KEY (category_id) REFERENCES option_categories (id) ON DELETE CASCADE
         )
       ''');
-
-      await db.execute('''
-        CREATE TABLE $tableOrderDetails (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          order_id INTEGER NOT NULL,
-          product_id INTEGER NOT NULL,
-          quantity INTEGER NOT NULL,
-          price_at_order INTEGER NOT NULL,
-          FOREIGN KEY (order_id) REFERENCES $tableOrders(id),
-          FOREIGN KEY (product_id) REFERENCES $tableProducts(id)
-        )
-      ''');
-
-      await _addInitialProducts(db);
     } catch (e) {
       debugPrint("Error creating tables: $e");
       rethrow;
     }
   }
 
-  Future<void> _addInitialProducts(Database db) async {
-    final List<Map<String, dynamic>> products = [
-      {
-        'product_name': 'Coffee Brown Sugar',
-        'category': 'Coffee',
-        'price': 28000,
-        'description': '',
-        'image_path': 'assets/images/coffee_brown_sugar.jpg',
-        'available': 100,
-      },
-      {
-        'product_name': 'Coffee Caramel Latte',
-        'category': 'Coffee',
-        'price': 32000,
-        'description': '',
-        'image_path': 'assets/images/coffee_caramel_latte.jpg',
-        'available': 80,
-      },
-      {
-        'product_name': 'Coffee Latte',
-        'category': 'Coffee',
-        'price': 30000,
-        'description': '',
-        'image_path': 'assets/images/coffee_latte.jpg',
-        'available': 120,
-      },
-      {
-        'product_name': 'Americano',
-        'category': 'Coffee',
-        'price': 18000,
-        'description': '',
-        'image_path': 'assets/images/americano.jpg',
-        'available': 50,
-      },
-      {
-        'product_name': 'Cappuccino',
-        'category': 'Coffee',
-        'price': 30000,
-        'description': '',
-        'image_path': 'assets/images/cappucino.jpg',
-        'available': 100,
-      },
-      {
-        'product_name': 'Espresso',
-        'category': 'Coffee',
-        'price': 15000,
-        'description': '',
-        'image_path': 'assets/images/espresso.jpg',
-        'available': 25,
-      },
-      {
-        'product_name': 'Macchiato',
-        'category': 'Coffee',
-        'price': 30000,
-        'description': '',
-        'image_path': 'assets/images/macchiato.jpg',
-        'available': 30,
-      },
-      {
-        'product_name': 'Vanilla Latte',
-        'category': 'Coffee',
-        'price': 35000,
-        'description': '',
-        'image_path': 'assets/images/vanilla_latte.jpg',
-        'available': 80,
-      },
-      {
-        'product_name': 'Caramel Macchiato',
-        'category': 'Coffee',
-        'price': 40000,
-        'description': '',
-        'image_path': 'assets/images/caramel_macchiato.jpg',
-        'available': 40,
-      },
-      {
-        'product_name': 'Hazelnut Cappuccino',
-        'category': 'Coffee',
-        'price': 35000,
-        'description': '',
-        'image_path': 'assets/images/hazelnut_cappucino.jpg',
-        'available': 45,
-      },
-      {
-        'product_name': 'Signature Affogato',
-        'category': 'Coffee',
-        'price': 30000,
-        'description': '',
-        'image_path': 'assets/images/signature_affogato.jpg',
-        'available': 45,
-      },
-      {
-        'product_name': 'FlatWhite',
-        'category': 'Coffee',
-        'price': 25000,
-        'description': '',
-        'image_path': 'assets/images/flatwhite.jpg',
-        'available': 30,
-      },
-      {
-        'product_name': 'Mocha',
-        'category': 'Coffee',
-        'price': 30000,
-        'description': '',
-        'image_path': 'assets/images/mocha.jpg',
-        'available': 33,
-      },
-      {
-        'product_name': 'Flavoured Latte',
-        'category': 'Coffee',
-        'price': 35000,
-        'description': '',
-        'image_path': 'assets/images/flavoured_latte.jpg',
-        'available': 45,
-      },
-      {
-        'product_name': 'Matcha Latte',
-        'category': 'Non Coffee',
-        'price': 32000,
-        'description': '',
-        'image_path': 'assets/images/matcha_latte.jpg',
-        'available': 60,
-      },
-      {
-        'product_name': 'Thaitea Latte',
-        'category': 'Non Coffee',
-        'price': 25000,
-        'description': '',
-        'image_path': 'assets/images/thaitea_latte.jpg',
-        'available': 80,
-      },
-      {
-        'product_name': 'Flavoured Milk',
-        'category': 'Non Coffee',
-        'price': 25000,
-        'description': '',
-        'image_path': 'assets/images/flavoured_milk.jpg',
-        'available': 40,
-      },
-      {
-        'product_name': 'Salted Caramel',
-        'category': 'Non Coffee',
-        'price': 28000,
-        'description': '',
-        'image_path': 'assets/images/ice_salted_caramel.jpg',
-        'available': 60,
-      },
-      {
-        'product_name': 'Chocolate Mint',
-        'category': 'Non Coffee',
-        'price': 22000,
-        'description': '',
-        'image_path': 'assets/images/chocolate_mint.jpg',
-        'available': 50,
-      },
-      {
-        'product_name': 'Lemon Tea',
-        'category': 'Non Coffee',
-        'price': 17000,
-        'description': '',
-        'image_path': 'assets/images/lemontea.jpg',
-        'available': 55,
-      },
-      {
-        'product_name': 'Chocolate',
-        'category': 'Non Coffee',
-        'price': 22000,
-        'description': '',
-        'image_path': 'assets/images/chocolate.jpg',
-        'available': 90,
-      },
-      {
-        'product_name': 'Ice Tea',
-        'category': 'Non Coffee',
-        'price': 15000,
-        'description': '',
-        'image_path': 'assets/images/tea.jpg',
-        'available': 70,
-      },
-      {
-        'product_name': 'Sparkling Water',
-        'category': 'Non Coffee',
-        'price': 12000,
-        'description': '',
-        'image_path': 'assets/images/sparkling.jpg',
-        'available': 40,
-      },
-      {
-        'product_name': 'Croissant',
-        'category': 'Snack',
-        'price': 10000,
-        'description': '',
-        'image_path': 'assets/images/croissant.jpg',
-        'available': 150,
-      },
-      {
-        'product_name': 'Cookies',
-        'category': 'Snack',
-        'price': 12000,
-        'description': '',
-        'image_path': 'assets/images/cookies.jpg',
-        'available': 110,
-      },
-      {
-        'product_name': 'Donut',
-        'category': 'Snack',
-        'price': 15000,
-        'description': '',
-        'image_path': 'assets/images/donut.jpg',
-        'available': 80,
-      },
-      {
-        'product_name': 'Macaron',
-        'category': 'Snack',
-        'price': 20000,
-        'description': '',
-        'image_path': 'assets/images/macaron.jpg',
-        'available': 70,
-      },
-      {
-        'product_name': 'Sandwich',
-        'category': 'Snack',
-        'price': 25000,
-        'description': '',
-        'image_path': 'assets/images/sandwich.jpg',
-        'available': 60,
-      },
-      {
-        'product_name': 'Muffin',
-        'category': 'Snack',
-        'price': 16000,
-        'description': '',
-        'image_path': 'assets/images/muffin.jpg',
-        'available': 50,
-      },
-      {
-        'product_name': 'French Fries',
-        'category': 'Snack',
-        'price': 24000,
-        'description': '',
-        'image_path': 'assets/images/frenchfries.jpg',
-        'available': 50,
-      },
-      {
-        'product_name': 'Onion Ring',
-        'category': 'Snack',
-        'price': 22000,
-        'description': '',
-        'image_path': 'assets/images/onionring.jpg',
-        'available': 40,
-      },
+  // Add initial data to the database
+  Future<void> addInitialData() async {
+    final db = await database;
+
+    final categories = [
+      'Size',
+      'Sweetness',
+      'Ice Cube',
+      'Topping',
     ];
 
-    for (var product in products) {
-      await db.insert(
-        tableProducts,
-        product,
+    // Add categories
+    Map<String, int> categoryIds = {};
+    for (var category in categories) {
+      int id = await db.insert(
+        'option_categories',
+        {'name': category},
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
+      categoryIds[category] = id;
+    }
+
+    final choices = [
+      {'category': 'Size', 'name': 'Regular Ice', 'additional_price': 0},
+      {'category': 'Size', 'name': 'Large Ice', 'additional_price': 6000},
+      {'category': 'Sweetness', 'name': 'Normal Sweet', 'additional_price': 0},
+      {'category': 'Sweetness', 'name': 'Less Sweet', 'additional_price': 0},
+      {'category': 'Sweetness', 'name': 'No Sweet', 'additional_price': 0},
+      {'category': 'Ice Cube', 'name': 'Normal Ice', 'additional_price': 0},
+      {'category': 'Ice Cube', 'name': 'Less Ice', 'additional_price': 0},
+      {'category': 'Ice Cube', 'name': 'More Ice', 'additional_price': 0},
+      {'category': 'Ice Cube', 'name': 'No Ice', 'additional_price': 0},
+      {'category': 'Topping', 'name': 'Caramel Sauce', 'additional_price': 6000},
+      {'category': 'Topping', 'name': 'Crumble', 'additional_price': 6000},
+      {'category': 'Topping', 'name': 'Sea Salt Cream', 'additional_price': 6000},
+      {'category': 'Topping', 'name': 'Milo Powder', 'additional_price': 6000},
+      {'category': 'Topping', 'name': 'Oreo Crumbs', 'additional_price': 6000},
+    ];
+
+    // Add choices to database
+    for (var choice in choices) {
+      int? categoryId = categoryIds[choice['category']];
+      if (categoryId != null) {
+        await db.insert(
+          'option_choices',
+          {
+            'category_id': categoryId,
+            'name': choice['name'],
+            'additional_price': choice['additional_price'],
+          },
+        );
+      }
     }
   }
 
-  // Fetch all products
-  static Future<List<Map<String, dynamic>>> fetchProducts() async {
-    final db = await LocalDatabase().database;
+  // Fetch order details (categories and their choices)
+  Future<List<Map<String, dynamic>>> fetchOrderDetails() async {
+    final db = await database;
     try {
-      return await db.query(tableProducts);
+      final List<Map<String, dynamic>> categories =
+          await db.query('option_categories');
+      List<Map<String, dynamic>> results = [];
+
+      for (var category in categories) {
+        final categoryId = category['id'];
+        final List<Map<String, dynamic>> choices = await db.query(
+          'option_choices',
+          where: 'category_id = ?',
+          whereArgs: [categoryId],
+        );
+
+        results.add({
+          'category': category['name'],
+          'choices': choices,
+        });
+      }
+
+      return results;
     } catch (e) {
-      debugPrint("Error fetching products: $e");
+      debugPrint("Error fetching order details: $e");
       return [];
     }
   }
 
-
-  static Future<List<Map<String, dynamic>>> fetchProductsByCategory(String category) async {
-    final db = await LocalDatabase().database;
-    try {
-      return await db.query(
-        tableProducts,
-        where: 'category = ? AND available = 1',
-        whereArgs: [category],
-      );
-    } catch (e) {
-      debugPrint("Error fetching products by category: $e");
-      return [];
-    }
+  /// Add a new category
+  Future<int> addCategory(String name) async {
+    final db = await database;
+    return await db.insert('option_categories', {'name': name});
   }
 
-  Future<void> addProduct(Map<String, dynamic> product) async {
+  /// Get all categories
+  Future<List<Map<String, dynamic>>> getCategories() async {
     final db = await database;
-    try {
-      await db.insert(
-        tableProducts,
-        product,
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    } catch (e) {
-      debugPrint("Error adding product: $e");
-      rethrow;
-    }
+    return await db.query('option_categories');
   }
 
-  Future<void> deleteProduct(int id) async {
+  /// Update a category
+  Future<int> updateCategory(int id, String name) async {
     final db = await database;
-    try {
-      await db.delete(
-        tableProducts,
-        where: 'id = ?',
-        whereArgs: [id],
-      );
-    } catch (e) {
-      debugPrint("Error deleting product: $e");
-      rethrow;
-    }
+    return await db.update(
+      'option_categories',
+      {'name': name},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  /// Delete a category
+  Future<int> deleteCategory(int id) async {
+    final db = await database;
+    return await db.delete(
+      'option_categories',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  /// Add a new choice
+  Future<int> addChoice(int categoryId, String name, int additionalPrice) async {
+    final db = await database;
+    return await db.insert('option_choices', {
+      'category_id': categoryId,
+      'name': name,
+      'additional_price': additionalPrice,
+    });
+  }
+
+  /// Get all choices
+  Future<List<Map<String, dynamic>>> getChoices(int categoryId) async {
+    final db = await database;
+    return await db.query(
+      'option_choices',
+      where: 'category_id = ?',
+      whereArgs: [categoryId],
+    );
+  }
+
+  /// Update a choice
+  Future<int> updateChoice(int id, String name, int additionalPrice) async {
+    final db = await database;
+    return await db.update(
+      'option_choices',
+      {
+        'name': name,
+        'additional_price': additionalPrice,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  /// Delete a choice
+  Future<int> deleteChoice(int id) async {
+    final db = await database;
+    return await db.delete(
+      'option_choices',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }

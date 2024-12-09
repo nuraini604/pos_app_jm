@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:posproject/LocalDb.dart';
 import 'package:posproject/pages/home_page.dart';
-import 'package:posproject/pages/order_page.dart';
+import 'package:posproject/pages/Detail_Page.dart';
 import 'package:posproject/pages/history_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final localDatabase = LocalDatabase();
+  await localDatabase.addInitialData(); // Inisialisasi database
+
   runApp(MyApp());
 }
 
@@ -15,7 +21,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const MainPage(),
-        '/order': (context) => const OrderPage(),
+        '/order': (context) => DetailPage(),
         '/history': (context) => const HistoryPage(),
       },
     );
@@ -34,7 +40,7 @@ class _MainPageState extends State<MainPage> {
 
   final List<Widget> _pages = [
     const HomePage(),
-    const OrderPage(),
+    DetailPage(),
     const HistoryPage(),
   ];
 
